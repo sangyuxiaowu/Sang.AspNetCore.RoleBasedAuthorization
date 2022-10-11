@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sang.AspNetCore.RoleBasedAuthorization;
 using System.Text;
 using TestDemo;
 
@@ -59,6 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         };
     });
+
+// Ìí¼Ó Sang RBAC ·þÎñ
+builder.Services.AddSangRoleBasedAuthorization();
 
 var app = builder.Build();
 

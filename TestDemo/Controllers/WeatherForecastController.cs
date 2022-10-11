@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Sang.AspNetCore.RoleBasedAuthorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -26,7 +27,7 @@ namespace TestDemo.Controllers
             _jwtSettings = jwtSettings;
         }
 
-        [Authorize]
+        [Resource("查询",Action ="查询天气")]
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
@@ -62,6 +63,12 @@ namespace TestDemo.Controllers
             {
                 access_token = new JwtSecurityTokenHandler().WriteToken(token)
             });
+        }
+
+        [HttpGet("Resources")]
+        public IActionResult Resources()
+        {
+            return Ok(ResourceData.Resources);
         }
     }
 }

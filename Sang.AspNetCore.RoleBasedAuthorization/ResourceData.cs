@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
     /// <summary>
-    /// 全局存储或获取项目中含有的 Resource 信息
+    /// 全局存储或获取项目中含有的 Resource 特性
     /// </summary>
     public class ResourceData
     {
@@ -30,7 +30,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// </summary>
         /// <param name="name">名称</param>
         /// <param name="action">操作</param>
-        public static void AddResource(string name, string action)
+        public static void AddResource(string name, string? action)
         {
             if (string.IsNullOrEmpty(name))
             {
