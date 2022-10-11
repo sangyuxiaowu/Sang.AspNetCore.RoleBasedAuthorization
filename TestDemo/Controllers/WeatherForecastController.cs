@@ -50,6 +50,8 @@ namespace TestDemo.Controllers
                 new Claim(ClaimTypes.NameIdentifier, "uid"),
                 new Claim(ClaimTypes.Name,"用户名"),
                 new Claim(ClaimTypes.Email,"test@exp.com"),
+                new Claim(ResourceClaimTypes.Permission,"AA"),
+                new Claim(ResourceClaimTypes.Permission,"查询"),
             };
             var token = new JwtSecurityToken(
                     "Issuer",
