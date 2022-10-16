@@ -18,6 +18,7 @@ namespace TestDemo.Controllers
         }
 
         // GET api/<ValuesController>/5
+        [Resource("查询-数值信息")]
         [HttpGet("{id}")]
         public string Get(int id)
         {

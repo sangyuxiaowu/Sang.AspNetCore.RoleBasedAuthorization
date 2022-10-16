@@ -5,10 +5,13 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     /// <summary>
     /// 资源描述属性
     /// 描述访问的角色需要的资源要求
-    /// 填写单独的整个资源，或使用 Action 设置资源下的某个操作
+    /// 
+    /// <list>填写单独的整个资源 “ResourceAttribute("资源")”</list>
+    /// <list>或使用 Action 设置资源下的某个操作 “ResourceAttribute("资源", Action = "操作")”</list>
+    /// <list>也可以使用形如“ResourceAttribute("资源-操作")”直接设置资源和操作</list>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class ResourceAttribute: AuthorizeAttribute
+    public class ResourceAttribute: AuthorizeAttribute, IAuthorizationRequirement
     {
         private string _resouceName;
         private string? _action;
@@ -23,9 +26,16 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             {
                 throw new ArgumentNullException(nameof(name));
             }
-            _resouceName = name;
-            //把资源名称设置成Policy名称
-            Policy = _resouceName;
+            string[] resourceValues = name.Split('-');
+            _resouceName = resourceValues[0];
+            if (resourceValues.Length > 1)
+            {
+                Action = resourceValues[1];
+            }
+            else
+            {
+                Policy = resourceValues[0];
+            }
         }
 
         /// <summary>

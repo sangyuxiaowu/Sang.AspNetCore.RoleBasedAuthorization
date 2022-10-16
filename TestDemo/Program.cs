@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sang.AspNetCore.RoleBasedAuthorization;
+using Sang.AspNetCore.RoleBasedAuthorizationRolePermission;
 using System.Text;
 using TestDemo;
 
@@ -73,7 +74,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+
 app.UseAuthentication();
+// UseAuthentication 之后 UseAuthorization 之前
+app.UseRolePermission(opt =>
+{
+    opt.rolePermission = new MyRolePermission();
+});
 app.UseAuthorization();
 
 app.MapControllers();

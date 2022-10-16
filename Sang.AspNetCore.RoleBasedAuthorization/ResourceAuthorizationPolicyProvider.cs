@@ -48,21 +48,18 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// 自定义授权策略
         /// 自动增加 Policy 授权策略
         /// </summary>
-        /// <param name="policyName"></param>
+        /// <param name="policyName">授权名称</param>
         /// <returns></returns>
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
             // 检查这个授权策略有没有
-            AuthorizationPolicy policy = _options.GetPolicy(policyName);
+            AuthorizationPolicy? policy = _options.GetPolicy(policyName);
 
             if (policy is null)
             {
-
-                string[] resourceValues = policyName.Split('-');
                 _options.AddPolicy(policyName, builder =>
                 {
-                    builder.AddRequirements(new ResourceAuthorizationRequirement(resourceValues[0], resourceValues.Length > 1 ? resourceValues[1] : null));
-
+                    builder.AddRequirements(new ResourceAttribute(policyName));
                 });
             }
 

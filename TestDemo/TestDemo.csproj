@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sang.AspNetCore.RoleBasedAuthorizationRolePermission\Sang.AspNetCore.RoleBasedAuthorizationRolePermission.csproj" />
     <ProjectReference Include="..\Sang.AspNetCore.RoleBasedAuthorization\Sang.AspNetCore.RoleBasedAuthorization.csproj" />
   </ItemGroup>
 
