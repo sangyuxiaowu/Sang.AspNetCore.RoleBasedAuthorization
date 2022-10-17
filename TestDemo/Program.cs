@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sang.AspNetCore.RoleBasedAuthorization;
-using Sang.AspNetCore.RoleBasedAuthorizationRolePermission;
+using Sang.AspNetCore.RoleBasedAuthorization.RolePermission;
+using System.ComponentModel;
+using System.Reflection;
 using System.Text;
 using TestDemo;
 
@@ -32,7 +35,17 @@ builder.Services.AddSwaggerGen(options => {
             new string[] {}
         }
     });
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var filePath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+    options.IncludeXmlComments(filePath);
 });
+
+// 
+// json 时间格式化问题处理
+builder.Services.Configure<JsonOptions>(options => {
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
+
 
 // 配置jwt
 JWTSettings jwtSettings = new()
@@ -71,7 +84,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => {
+        //设置swagger的json数据位置
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Test Sang RBAC v1");
+    });
 }
 
 

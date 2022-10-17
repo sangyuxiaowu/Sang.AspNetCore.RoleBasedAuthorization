@@ -13,4 +13,12 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// </summary>
         public static readonly string Permission = "Permission";
     }
+
+    public class ResourceRole
+    {
+        /// <summary>
+        /// 系统内置超级管理员权限的角色名，该角色不进行权限检查
+        /// </summary>
+        public static readonly string Administrator = "SangRBAC_Administrator";
+    }
 }

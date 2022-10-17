@@ -17,7 +17,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             if (context.User is null) return Task.CompletedTask;
 
 
-            if (context.User.IsInRole("SangRBAC_Administrator") // 超级管理员权限，拥有 SangRBAC_Administrator 角色不检查权限
+            if (context.User.IsInRole(ResourceRole.Administrator) // 超级管理员权限，拥有 SangRBAC_Administrator 角色不检查权限
                 || CheckClaims(context.User.Claims, requirement) // 符合 Resource 或 Resource-Action 组合的 Permission
                 )
             {
