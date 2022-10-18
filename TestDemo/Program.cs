@@ -40,8 +40,8 @@ builder.Services.AddSwaggerGen(options => {
     options.IncludeXmlComments(filePath);
 });
 
-// 
-// json 时间格式化问题处理
+
+// json 循环引用问题
 builder.Services.Configure<JsonOptions>(options => {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
