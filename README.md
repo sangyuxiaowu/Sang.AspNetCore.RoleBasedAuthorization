@@ -109,6 +109,14 @@ public class MyRolePermission : IRolePermission
 }
 ```
 
+Then add service;
+
+然后添加服务。
+
+```csharp
+builder.Services.AddRolePermission<MyRolePermission>();
+```
+
 ##### Step 2
 
 Enable this middleware before `app.UseAuthorization();` and after `app.UseAuthentication();`.
@@ -117,28 +125,20 @@ Enable this middleware before `app.UseAuthorization();` and after `app.UseAuthen
 
 ```csharp
 app.UseAuthentication();
-app.UseRolePermission(option =>
-{
-    option.rolePermission = new MyRolePermission();
-});
+app.UseRolePermission();
 app.UseAuthorization();
 ```
 ##### Option
 
+UseRolePermission 
 
-**1. option.rolePermission：**
-
-The implementation of `IRolePermission`, obtain the `Permission` of the role according to the role name.
-
-`IRolePermission 的实现`，根据角色名获取角色的 `Permission`。
-
-**2. option.userAdministratorRoleName：**
+**1. option.userAdministratorRoleName：**
 
 Set a custom role to have the same built-in super administrator privileges as `SangRBAC_Administrator`.
 
 设置一个自定义角色，使其拥有 `SangRBAC_Administrator` 一样的系统内置超级管理员权限。
 
-**3. option.Always：**
+**2. option.Always：**
 
 Whether to check and execute the addition all the time. By default, only when the `ResourceAttribute` is included for permission verification, the access middleware will start the adding permission function.
 

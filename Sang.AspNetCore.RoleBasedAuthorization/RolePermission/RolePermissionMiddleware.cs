@@ -12,11 +12,13 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
     {
         private readonly RequestDelegate _next;
         private readonly RolePermissionOptions _opt;
+        private readonly IRolePermission _rolePermission;
 
-        public RolePermissionMiddleware(RequestDelegate next, RolePermissionOptions opt)
+        public RolePermissionMiddleware(RequestDelegate next, RolePermissionOptions opt, IRolePermission rolePermission)
         {
             _next = next;
             _opt = opt;
+            _rolePermission = rolePermission;
         }
 
         /// <summary>
@@ -64,7 +66,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
             // 逐个获取角色的 claims 并添加给 User
             foreach (var role in roles.ToList())
             {
-                var roleclaims = await _opt.rolePermission.GetRolePermissionClaimsByName(role.Value);
+                var roleclaims = await _rolePermission.GetRolePermissionClaimsByName(role.Value);
                 if (roleclaims.Count() > 0)
                 {
                     context.User.AddIdentity(new ClaimsIdentity(roleclaims));

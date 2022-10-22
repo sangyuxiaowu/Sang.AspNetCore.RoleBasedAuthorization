@@ -77,6 +77,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // 添加 Sang RBAC 服务
 builder.Services.AddSangRoleBasedAuthorization();
+// 添加 角色权限查询服务
+builder.Services.AddRolePermission<MyRolePermission>();
 
 var app = builder.Build();
 
@@ -94,10 +96,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 // UseAuthentication 之后 UseAuthorization 之前
-app.UseRolePermission(opt =>
-{
-    opt.rolePermission = new MyRolePermission();
-});
+app.UseRolePermission();
 app.UseAuthorization();
 
 app.MapControllers();
