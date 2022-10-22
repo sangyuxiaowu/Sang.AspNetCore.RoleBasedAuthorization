@@ -53,7 +53,10 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
             }
 
             // 使用 Sang.AspNetCore.RoleBasedAuthorization 时，设置一个自定义角色，使其拥有 SangRBAC_Administrator 一样的系统内置超级管理员权限
-            if (!string.IsNullOrWhiteSpace(_opt.userAdministratorRoleName) && _opt.userAdministratorRoleName != ResourceRole.Administrator)
+            if (!string.IsNullOrWhiteSpace(_opt.userAdministratorRoleName) // 设置有超级管理员
+                && _opt.userAdministratorRoleName != ResourceRole.Administrator // 和内置的不一样
+                && context.User.IsInRole(_opt.userAdministratorRoleName) // 该用户拥有
+                )
             {
                 var claims = new List<Claim>{
                     new Claim(ClaimTypes.Role, ResourceRole.Administrator),
