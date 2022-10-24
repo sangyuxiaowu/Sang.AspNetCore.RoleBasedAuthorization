@@ -132,7 +132,7 @@ app.UseAuthorization();
 
 UseRolePermission 
 
-**1. option.userAdministratorRoleName：**
+**1. option.UserAdministratorRoleName：**
 
 Set a custom role to have the same built-in super administrator privileges as `SangRBAC_Administrator`.
 
@@ -144,3 +144,7 @@ Whether to check and execute the addition all the time. By default, only when th
 
 是否一直检查并执行添加，默认只有在含有 `ResourceAttribute` 要进行权限验证时，此次访问中间件才启动添加权限功能。
 
+## Demo
+
+- Simple Demo https://github.com/sangyuxiaowu/Sang.AspNetCore.RoleBasedAuthorization/tree/main/TestDemo
+- Used in the Identity https://github.com/sangyuxiaowu/IdentityRBAC
