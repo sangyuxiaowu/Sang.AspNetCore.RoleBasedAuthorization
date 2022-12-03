@@ -8,7 +8,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
     /// <summary>
     /// 动态添加角色的 Permission
     /// </summary>
-    internal class RolePermissionMiddleware
+    internal sealed class RolePermissionMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly RolePermissionOptions _opt;

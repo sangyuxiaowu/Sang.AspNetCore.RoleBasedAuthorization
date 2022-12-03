@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
-    internal class ResourceAuthorizationHandler : AuthorizationHandler<ResourceAttribute>
+    internal sealed class ResourceAuthorizationHandler : AuthorizationHandler<ResourceAttribute>
     {
         /// <summary>
         /// 授权处理

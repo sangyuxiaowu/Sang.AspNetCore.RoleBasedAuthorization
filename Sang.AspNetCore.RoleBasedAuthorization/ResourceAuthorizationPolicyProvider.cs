@@ -8,7 +8,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     /// 资源授权策略
     /// 实现动态 AddPolicy
     /// </summary>
-    internal class ResourceAuthorizationPolicyProvider : IAuthorizationPolicyProvider
+    internal sealed class ResourceAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     {
         private AuthorizationOptions _options;
         /// <summary>

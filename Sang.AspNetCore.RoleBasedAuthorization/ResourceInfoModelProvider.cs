@@ -7,7 +7,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     /// 在服务启动时从配置的Resource特性中获取权限类别信息
     /// https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/application-model?view=aspnetcore-6.0
     /// </summary>
-    internal class ResourceInfoModelProvider : IApplicationModelProvider
+    internal sealed class ResourceInfoModelProvider : IApplicationModelProvider
     {
         /// <summary>
         /// 执行的排序
