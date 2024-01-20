@@ -50,7 +50,7 @@ builder.Services.Configure<JsonOptions>(options => {
 // ≈‰÷√jwt
 JWTSettings jwtSettings = new()
 {
-    SecretKey = "You_JWT_Secret_Key",
+    SecretKey = "You_JWT_Secret_Key_Greater_Than_256",
     ExpireSeconds = 3600
 };
 builder.Services.Configure<JWTSettings>(opt => {
