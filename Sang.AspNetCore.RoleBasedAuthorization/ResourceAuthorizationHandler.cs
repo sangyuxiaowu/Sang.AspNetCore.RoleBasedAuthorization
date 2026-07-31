@@ -1,10 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
     internal sealed class ResourceAuthorizationHandler : AuthorizationHandler<ResourceAttribute>
     {
+        private readonly SangRoleBasedAuthorizationOptions _options;
+
+        /// <summary>
+        /// 构造资源授权处理程序
+        /// </summary>
+        /// <param name="options">Sang RBAC 配置项</param>
+        public ResourceAuthorizationHandler(IOptions<SangRoleBasedAuthorizationOptions> options)
+        {
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        }
+
         /// <summary>
         /// 授权处理
         /// </summary>
@@ -17,7 +29,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             if (context.User is null) return Task.CompletedTask;
 
 
-            if (context.User.IsInRole(ResourceRole.Administrator) // 超级管理员权限，拥有 SangRBAC_Administrator 角色不检查权限
+            if (context.User.IsInRole(_options.AdministratorRoleName) // 超级管理员权限，拥有配置的管理员角色名时不检查权限
                 || CheckClaims(context.User.Claims, requirement) // 符合 Resource 或 Resource-Action 组合的 Permission
                 )
             {
