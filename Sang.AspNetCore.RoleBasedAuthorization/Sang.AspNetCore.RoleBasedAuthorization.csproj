@@ -21,6 +21,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sang.AspNetCore.RoleBasedAuthorization.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\ico.png">
       <Pack>True</Pack>
