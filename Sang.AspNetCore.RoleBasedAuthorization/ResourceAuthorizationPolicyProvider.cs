@@ -10,7 +10,9 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     /// </summary>
     internal sealed class ResourceAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     {
-        private AuthorizationOptions _options;
+        private readonly AuthorizationOptions _options;
+        private readonly object _policyLock = new object();
+
         /// <summary>
         /// 构造资源授权策略
         /// </summary>
@@ -57,13 +59,22 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
 
             if (policy is null)
             {
-                _options.AddPolicy(policyName, builder =>
+                lock (_policyLock)
                 {
-                    builder.AddRequirements(new ResourceAttribute(policyName));
-                });
+                    // 再次检查，避免多个线程同时进入时重复添加
+                    policy = _options.GetPolicy(policyName);
+                    if (policy is null)
+                    {
+                        _options.AddPolicy(policyName, builder =>
+                        {
+                            builder.AddRequirements(new ResourceAttribute(policyName));
+                        });
+                        policy = _options.GetPolicy(policyName);
+                    }
+                }
             }
 
-            return Task.FromResult(_options.GetPolicy(policyName));
+            return Task.FromResult(policy);
         }
     }
 
