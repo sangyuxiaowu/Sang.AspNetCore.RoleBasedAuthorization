@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+ï»¿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Sang.AspNetCore.RoleBasedAuthorization;
 using Sang.AspNetCore.RoleBasedAuthorization.RolePermission;
 using System.ComponentModel;
@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
-    // ÅäÖÃ Swagger ÈÏÖ¤ĞÅÏ¢
+    // é…ç½® Swagger è®¤è¯ä¿¡æ¯
     options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.Http,
@@ -25,14 +25,11 @@ builder.Services.AddSwaggerGen(options => {
         BearerFormat = "JWT",
         Description = "JWT Authorization header using the Bearer scheme."
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" }
-            },
-            new string[] {}
+            new OpenApiSecuritySchemeReference("bearerAuth", document, null),
+            new List<string>()
         }
     });
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -41,13 +38,13 @@ builder.Services.AddSwaggerGen(options => {
 });
 
 
-// json Ñ­»·ÒıÓÃÎÊÌâ
+// json å¾ªç¯å¼•ç”¨é—®é¢˜
 builder.Services.Configure<JsonOptions>(options => {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
 
 
-// ÅäÖÃjwt
+// é…ç½®jwt
 JWTSettings jwtSettings = new()
 {
     SecretKey = "You_JWT_Secret_Key_Greater_Than_256",
@@ -61,23 +58,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt => {
         opt.TokenValidationParameters = new()
         {
-            //ÑéÖ¤Ç©Ãû
+            //éªŒè¯ç­¾å
             ValidateIssuerSigningKey = true,
-            //ÓÃÓÚÇ©ÃûÑéÖ¤
+            //ç”¨äºç­¾åéªŒè¯
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-            //ÑéÖ¤°ä·¢Õß
+            //éªŒè¯é¢å‘è€…
             ValidateIssuer = false,
             ValidIssuer = jwtSettings.Issuer,
-            //Ö¤·ÃÎÊÈºÌå
+            //è¯è®¿é—®ç¾¤ä½“
             ValidateAudience = false,
             ValidAudience = jwtSettings.Audience,
 
         };
     });
 
-// Ìí¼Ó Sang RBAC ·şÎñ
+// æ·»åŠ  Sang RBAC æœåŠ¡
 builder.Services.AddSangRoleBasedAuthorization();
-// Ìí¼Ó ½ÇÉ«È¨ÏŞ²éÑ¯·şÎñ
+// æ·»åŠ  è§’è‰²æƒé™æŸ¥è¯¢æœåŠ¡
 builder.Services.AddRolePermission<MyRolePermission>();
 
 var app = builder.Build();
@@ -87,7 +84,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options => {
-        //ÉèÖÃswaggerµÄjsonÊı¾İÎ»ÖÃ
+        //è®¾ç½®swaggerçš„jsonæ•°æ®ä½ç½®
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Test Sang RBAC v1");
     });
 }
@@ -95,7 +92,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseAuthentication();
-// UseAuthentication Ö®ºó UseAuthorization Ö®Ç°
+// UseAuthentication ä¹‹å UseAuthorization ä¹‹å‰
 app.UseRolePermission();
 app.UseAuthorization();
 
