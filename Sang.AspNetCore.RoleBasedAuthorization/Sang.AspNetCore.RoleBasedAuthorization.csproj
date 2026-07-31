@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.7</Version>
+    <Version>1.1.7</Version>
     <Authors>SangSQ(桑世强)</Authors>
     <Description>AspNet Web API Role-Based Authorization. RBAC 权限管理</Description>
     <PackageIcon>ico.png</PackageIcon>
@@ -21,6 +21,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sang.AspNetCore.RoleBasedAuthorization.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\ico.png">
       <Pack>True</Pack>

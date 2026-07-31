@@ -18,12 +18,13 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     }
 
     /// <summary>
-    /// 定义 Sang RBAC 的内置角色名称。
+    /// 定义 Sang RBAC 的默认内置角色名称。
     /// </summary>
     public class ResourceRole
     {
         /// <summary>
-        /// 系统内置超级管理员权限的角色名，该角色不进行权限检查
+        /// 系统内置超级管理员权限的默认角色名。
+        /// 该角色在默认配置下不进行权限检查，可通过 <see cref="SangRoleBasedAuthorizationOptions.AdministratorRoleName"/> 修改。
         /// </summary>
         public static readonly string Administrator = "SangRBAC_Administrator";
     }

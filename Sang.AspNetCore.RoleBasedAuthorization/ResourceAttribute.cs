@@ -8,17 +8,19 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
     /// 
     /// <list>填写单独的整个资源 “[Resource("资源")]”</list>
     /// <list>或使用 Action 设置资源下的某个操作 “[Resource("资源", Action = "操作")]”</list>
-    /// <list>也可以使用形如“[Resource("资源-操作")]”直接设置资源和操作</list>
+    /// <list>也可以使用形如“[Resource("资源-操作")]”直接设置资源和操作（不推荐，资源名含 '-' 时会有歧义）</list>
+    /// <list>推荐显式指定资源与操作 “[Resource("资源", "操作")]”</list>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ResourceAttribute: AuthorizeAttribute, IAuthorizationRequirement
     {
         private string _resouceName;
         private string? _action;
+
         /// <summary>
         /// 设置资源类型
         /// </summary>
-        /// <param name="name">资源名称</param>
+        /// <param name="name">资源名称，可包含用 '-' 分隔的操作名称</param>
         /// <exception cref="ArgumentNullException">资源名称不能为空</exception>
         public ResourceAttribute(string name)
         {
@@ -36,6 +38,23 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             {
                 Policy = resourceValues[0];
             }
+        }
+
+        /// <summary>
+        /// 显式设置资源类型与操作
+        /// </summary>
+        /// <param name="resource">资源名称</param>
+        /// <param name="action">操作名称</param>
+        /// <exception cref="ArgumentNullException">资源名称不能为空</exception>
+        public ResourceAttribute(string resource, string action)
+        {
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+            _resouceName = resource;
+            _action = action;
+            Policy = string.IsNullOrEmpty(action) ? resource : $"{resource}-{action}";
         }
 
         /// <summary>
