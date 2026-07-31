@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
+    /// <summary>
+    /// 提供 Sang 基于资源的授权服务注册扩展。
+    /// </summary>
     public static class ResourceExtensions
     {
         /// <summary>

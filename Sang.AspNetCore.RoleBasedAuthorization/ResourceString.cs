@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
+    /// <summary>
+    /// 定义 Sang RBAC 使用的 Claim 类型。
+    /// </summary>
     public class ResourceClaimTypes
     {
         /// <summary>
@@ -14,6 +17,9 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         public static readonly string Permission = "Permission";
     }
 
+    /// <summary>
+    /// 定义 Sang RBAC 的内置角色名称。
+    /// </summary>
     public class ResourceRole
     {
         /// <summary>
