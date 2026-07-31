@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
 {
+    /// <summary>
+    /// 定义按角色查询权限声明的服务契约。
+    /// </summary>
     public interface IRolePermission
     {
         /// <summary>

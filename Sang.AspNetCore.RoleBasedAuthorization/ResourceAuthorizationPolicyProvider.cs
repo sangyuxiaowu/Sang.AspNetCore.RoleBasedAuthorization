@@ -40,8 +40,8 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// 以提供在合并策略和未指定策略时使用的策略
         /// </summary>
         /// <returns></returns>
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() =>
-            Task.FromResult<AuthorizationPolicy>(null);
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() =>
+            Task.FromResult<AuthorizationPolicy?>(null);
 
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// </summary>
         /// <param name="policyName">授权名称</param>
         /// <returns></returns>
-        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             // 检查这个授权策略有没有
             AuthorizationPolicy? policy = _options.GetPolicy(policyName);

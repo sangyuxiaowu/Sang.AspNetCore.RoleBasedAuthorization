@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
 {
+    /// <summary>
+    /// 提供角色权限中间件和服务注册扩展。
+    /// </summary>
     public static class RolePermissionExtensions
     {
         /// <summary>
