@@ -62,8 +62,7 @@ public IActionResult Delete(int id)
 ##### 步骤 4
 
 完成以上操作后，授权检查将验证 `User.Claims` 是否存在对应的 `Permission`。
-需要为用户添加对应的 `Claims`，可以在生成 JWT Token 时直接包含。
-也可以使用中间件读取对应的角色，在授权检查前添加，可以自己实现也可以使用下一节介绍的功能。
+可以在生成 JWT Token 时直接包含，也可以使用下一节的中间件在授权检查前按角色或用户标识读取并添加；使用中间件时 JWT 无需包含 `Permission`。
 
 ```csharp
 var claims = new List<Claim>
@@ -72,7 +71,6 @@ var claims = new List<Claim>
     new Claim(ClaimTypes.Name, "用户名"),
     new Claim(ClaimTypes.Email, "test@exp.com"),
     new Claim(ClaimTypes.Role, "user"),
-    new Claim(ResourceClaimTypes.Permission, "查询"),
 };
 var token = new JwtSecurityToken(
         "Issuer",
@@ -91,7 +89,7 @@ var token = new JwtSecurityToken(
 
 ##### 步骤 1
 
-实现 `IRolePermission`，通过角色名获取该角色权限列表：
+实现 `IRolePermission`，通过角色名获取角色权限；也可按当前用户读取直接授予的权限：
 
 ```csharp
 public class MyRolePermission : IRolePermission
@@ -102,8 +100,17 @@ public class MyRolePermission : IRolePermission
         // your code
         return Task.FromResult(list);
     }
+
+    public Task<List<Claim>> GetUserPermissionClaims(ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // 按 userId 查询直接授予的权限
+        return Task.FromResult(new List<Claim>());
+    }
 }
 ```
+
+`GetUserPermissionClaims` 具有默认空实现；仅使用角色权限时不需要实现它。角色权限与用户直授权限会合并、按 Claim 的 `Type` 和 `Value` 去重后一次性加入当前请求的 `User`。
 
 然后添加服务：
 
