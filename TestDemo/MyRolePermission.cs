@@ -29,27 +29,9 @@ namespace TestDemo
             return Task.FromResult(list);
         }
 
-        public Task<List<Claim>> GetUserPermissionClaims(ClaimsPrincipal user)
-        {
-            List<Claim> list = new();
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId is not null && MyUser.TryGetValue(userId, out var permissions))
-            {
-                list.AddRange(permissions.Select(permission => new Claim(ResourceClaimTypes.Permission, permission)));
-            }
-
-            return Task.FromResult(list);
-        }
-
 
         // 以下为演示，实际使用可结合 Identity RoleManager 实现，并添加缓存
         public static Dictionary<string, List<string>> MyRole { get; set; } = new();
-
-        // 以下为演示，实际使用可根据用户 ID 查询直接授予的权限
-        public static Dictionary<string, List<string>> MyUser { get; set; } = new()
-        {
-            ["uid"] = new List<string> { "values.read" }
-        };
 
         /// <summary>
         /// 添加角色权限

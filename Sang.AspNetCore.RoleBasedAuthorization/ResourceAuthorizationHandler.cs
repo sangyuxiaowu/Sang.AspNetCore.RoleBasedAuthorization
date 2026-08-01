@@ -47,15 +47,17 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// <returns></returns>
         private bool CheckClaims(IEnumerable<Claim> claims, ResourceAttribute requirement)
         {
-            var resource = requirement.Resource!;
+            var resource = requirement.GetResource();
+            var action = requirement.Action;
 
             return claims.Any(c =>
                         string.Equals(c.Type, ResourceClaimTypes.Permission, StringComparison.OrdinalIgnoreCase)
                         && (
                             string.Equals(c.Value, "*", StringComparison.Ordinal) // 全局通配，拥有全部权限
                             || string.Equals(c.Value, resource, StringComparison.Ordinal) // 资源级授权，拥有该资源全部操作
-                            || string.Equals(c.Value, $"{resource}.*", StringComparison.Ordinal) // 资源操作通配
-                            || string.Equals(c.Value, requirement.Permission, StringComparison.Ordinal) // 精确匹配资源-操作
+                            || string.Equals(c.Value, $"{resource}-*", StringComparison.Ordinal) // 资源操作通配
+                            || (!string.IsNullOrEmpty(action)
+                                && string.Equals(c.Value, $"{resource}-{action}", StringComparison.Ordinal)) // 精确匹配资源-操作
                         )
                         );
         }

@@ -1,84 +1,55 @@
-﻿namespace Sang.AspNetCore.RoleBasedAuthorization
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sang.AspNetCore.RoleBasedAuthorization
 {
     /// <summary>
-    /// 获取当前应用已使用权限的本地化详情。
+    /// 全局存储或获取项目中含有的 Resource 特性
     /// </summary>
     public class ResourceData
     {
-        private static IReadOnlyList<ResourceInfo> _resources = Array.Empty<ResourceInfo>();
-
-        /// <summary>
-        /// 获取当前应用已使用权限的层级详情。
-        /// </summary>
-        public static IReadOnlyList<ResourceInfo> GetResourceInfos() => _resources;
-
-        /// <summary>
-        /// 设置当前应用控制器实际使用的权限。
-        /// </summary>
-        internal static void SetPermissions(IEnumerable<ResourceAttribute> permissions)
+        static ResourceData()
         {
-            _resources = permissions
-                .GroupBy(permission => permission.Resource!, StringComparer.OrdinalIgnoreCase)
-                .Select(group => new ResourceInfo
-                {
-                    ResourceKey = group.Key,
-                    ResourceName = group.First().ResourceName ?? group.Key,
-                    Actions = group.Select(permission => new ResourceActionInfo
-                    {
-                        ActionKey = permission.Action,
-                        ActionName = permission.ActionName,
-                        Description = permission.Description,
-                        Permission = permission.Permission
-                    }).ToList()
-                })
-                .ToList();
+            Resources = new Dictionary<string, List<string>>();
         }
-    }
-
-    /// <summary>
-    /// 权限管理界面使用的资源详情。
-    /// </summary>
-    public class ResourceInfo
-    {
-        /// <summary>
-        /// 模块键。
-        /// </summary>
-        public string ResourceKey { get; init; } = string.Empty;
 
         /// <summary>
-        /// 模块展示名称。
+        /// 添加资源
         /// </summary>
-        public string ResourceName { get; init; } = string.Empty;
+        /// <param name="name">名称</param>
+        public static void AddResource(string name)
+        {
+            AddResource(name, "");
+        }
 
         /// <summary>
-        /// 模块下实际使用的操作。
+        /// 添加资源
         /// </summary>
-        public IReadOnlyList<ResourceActionInfo> Actions { get; init; } = Array.Empty<ResourceActionInfo>();
-    }
+        /// <param name="name">名称</param>
+        /// <param name="action">操作</param>
+        public static void AddResource(string name, string? action)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
+            }
+            if (!Resources.ContainsKey(name))
+            {
+                Resources.Add(name, new List<string>());
+            }
 
-    /// <summary>
-    /// 权限模块下的操作详情。
-    /// </summary>
-    public class ResourceActionInfo
-    {
-        /// <summary>
-        /// 操作键。
-        /// </summary>
-        public string ActionKey { get; init; } = string.Empty;
-
-        /// <summary>
-        /// 操作展示名称。
-        /// </summary>
-        public string ActionName { get; init; } = string.Empty;
-
-        /// <summary>
-        /// 操作介绍。
-        /// </summary>
-        public string? Description { get; init; }
+            if (!string.IsNullOrEmpty(action) && !Resources[name].Contains(action))
+            {
+                Resources[name].Add(action);
+            }
+        }
 
         /// <summary>
-        /// 稳定的权限码。
+        /// 资源信息
         /// </summary>
-        public string Permission { get; init; } = string.Empty;
+        public static Dictionary<string, List<string>> Resources { get; set; }
     }
 }

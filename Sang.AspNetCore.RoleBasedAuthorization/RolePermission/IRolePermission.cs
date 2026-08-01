@@ -18,16 +18,5 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
         /// <param name="roleName"></param>
         /// <returns></returns>
         Task<List<Claim>> GetRolePermissionClaimsByName(string roleName);
-
-        /// <summary>
-        /// 获取用户直接授予的所有 Permission。
-        /// 默认不返回任何声明，以保持现有实现兼容。
-        /// </summary>
-        /// <param name="user">当前用户</param>
-        /// <returns></returns>
-        Task<List<Claim>> GetUserPermissionClaims(ClaimsPrincipal user)
-        {
-            return Task.FromResult(new List<Claim>());
-        }
     }
 }

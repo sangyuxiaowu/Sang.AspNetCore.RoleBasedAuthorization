@@ -5,45 +5,70 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
     public class ResourceAttributeTests
     {
         [Theory]
-        [InlineData("roles", "read")]
-        [InlineData("values", "delete")]
-        public void Constructor_WithCompleteMetadata_SetsPermissionPolicy(string resource, string action)
+        [InlineData("资源")]
+        [InlineData("Resource")]
+        public void Constructor_WithResourceOnly_SetsPolicyToResource(string resource)
         {
-            var attr = new ResourceAttribute(resource, action, "Roles", "Read roles", "Allows viewing roles");
+            var attr = new ResourceAttribute(resource);
 
-            Assert.Equal(resource, attr.Resource);
-            Assert.Equal("Roles", attr.ResourceName);
-            Assert.Equal("Read roles", attr.ActionName);
-            Assert.Equal($"{resource}.{action}", attr.Permission);
-            Assert.Equal(attr.Permission, attr.Policy);
+            Assert.Equal(resource, attr.GetResource());
+            Assert.Null(attr.Action);
+            Assert.Equal(resource, attr.Policy);
+        }
+
+        [Theory]
+        [InlineData("资源", "操作")]
+        [InlineData("Resource", "Action")]
+        public void Constructor_WithResourceAndAction_SetsPolicy(string resource, string action)
+        {
+            var attr = new ResourceAttribute(resource, action);
+
+            Assert.Equal(resource, attr.GetResource());
+            Assert.Equal(action, attr.Action);
+            Assert.Equal($"{resource}-{action}", attr.Policy);
+        }
+
+        [Theory]
+        [InlineData("资源-操作", "资源", "操作")]
+        [InlineData("Resource-Action", "Resource", "Action")]
+        public void Constructor_WithDashNotation_SplitsResourceAndAction(string name, string expectedResource, string expectedAction)
+        {
+            var attr = new ResourceAttribute(name);
+
+            Assert.Equal(expectedResource, attr.GetResource());
+            Assert.Equal(expectedAction, attr.Action);
+            Assert.Equal(name, attr.Policy);
         }
 
         [Fact]
-        public void Constructor_WithEmptyKeys_ThrowsArgumentException()
+        public void Constructor_WithDashNotation_MultipleDashes_TakesFirstPartAsResource()
         {
-            Assert.Throws<ArgumentException>(() => new ResourceAttribute("", "read", "Roles", "Read roles"));
-            Assert.Throws<ArgumentException>(() => new ResourceAttribute("roles", "", "Roles", "Read roles"));
+            var attr = new ResourceAttribute("资源-操作-额外");
+
+            Assert.Equal("资源", attr.GetResource());
+            Assert.Equal("操作", attr.Action);
+            Assert.Equal("资源-操作", attr.Policy);
+        }
+
+        [Fact]
+        public void Constructor_WithNullResource_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ResourceAttribute(null!));
+        }
+
+        [Fact]
+        public void Constructor_WithEmptyResource_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ResourceAttribute(""));
         }
 
         [Fact]
         public void Implements_AuthorizeAttribute_And_IAuthorizationRequirement()
         {
-            var attr = new ResourceAttribute("read", "Read roles");
+            var attr = new ResourceAttribute("Resource", "Action");
 
             Assert.IsAssignableFrom<AuthorizeAttribute>(attr);
             Assert.IsAssignableFrom<IAuthorizationRequirement>(attr);
         }
-
-        [Fact]
-        public void SetModule_CombinesModuleAndAction()
-        {
-            var attr = new ResourceAttribute("delete", "Delete role", "Allows deleting a role");
-            attr.SetModule(new ResourceModuleAttribute("roles", "Role permissions"));
-
-            Assert.Equal("roles.delete", attr.Permission);
-            Assert.Equal("Role permissions", attr.ResourceName);
-            Assert.Equal(attr.Permission, attr.Policy);
-        }
-
     }
 }

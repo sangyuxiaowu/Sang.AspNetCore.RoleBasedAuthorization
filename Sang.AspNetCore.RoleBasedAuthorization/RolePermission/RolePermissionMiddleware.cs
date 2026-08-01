@@ -52,26 +52,16 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.RolePermission
                 }
             }
 
-            var permissionClaims = new List<Claim>();
-
-            // 获取用户的角色，并根据角色获取权限声明
-            foreach (var role in context.User.FindAll(ClaimTypes.Role))
+            // 获取用户的所有角色
+            var roles = context.User.FindAll(ClaimTypes.Role);
+            // 逐个获取角色的 claims 并添加给 User
+            foreach (var role in roles.ToList())
             {
-                permissionClaims.AddRange(await _rolePermission.GetRolePermissionClaimsByName(role.Value));
-            }
-
-            // 获取用户直接授予的权限声明
-            permissionClaims.AddRange(await _rolePermission.GetUserPermissionClaims(context.User));
-
-            // 移除重复的权限声明，确保每个权限声明只出现一次
-            var distinctClaims = permissionClaims
-                .GroupBy(claim => claim.Type, StringComparer.OrdinalIgnoreCase)
-                .SelectMany(group => group.GroupBy(claim => claim.Value, StringComparer.Ordinal))
-                .Select(group => group.First());
-
-            if (distinctClaims.Any())
-            {
-                context.User.AddIdentity(new ClaimsIdentity(distinctClaims));
+                var roleclaims = await _rolePermission.GetRolePermissionClaimsByName(role.Value);
+                if (roleclaims.Count() > 0)
+                {
+                    context.User.AddIdentity(new ClaimsIdentity(roleclaims));
+                }
             }
             await _next(context);
         }

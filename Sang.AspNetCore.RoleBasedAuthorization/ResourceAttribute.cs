@@ -3,133 +3,87 @@
 namespace Sang.AspNetCore.RoleBasedAuthorization
 {
     /// <summary>
-    /// 声明资源操作的授权要求及默认展示文本。
+    /// 资源描述属性
+    /// 描述访问的角色需要的资源要求
+    /// 
+    /// <list>填写单独的整个资源 “[Resource("资源")]”</list>
+    /// <list>或使用 Action 设置资源下的某个操作 “[Resource("资源", Action = "操作")]”</list>
+    /// <list>也可以使用形如“[Resource("资源-操作")]”直接设置资源和操作（不推荐，资源名含 '-' 时会有歧义）</list>
+    /// <list>推荐显式指定资源与操作 “[Resource("资源", "操作")]”</list>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ResourceAttribute: AuthorizeAttribute, IAuthorizationRequirement
     {
+        private string _resouceName;
+        private string? _action;
+
         /// <summary>
-        /// 在 <see cref="ResourceModuleAttribute"/> 所在 Controller 中初始化资源操作授权要求。
+        /// 设置资源类型
         /// </summary>
-        /// <param name="action">稳定的英文操作键。</param>
-        /// <param name="actionName">操作展示名称。</param>
-        /// <param name="description">操作介绍。</param>
-        public ResourceAttribute(string action, string actionName, string? description = null)
+        /// <param name="name">资源名称，可包含用 '-' 分隔的操作名称</param>
+        /// <exception cref="ArgumentNullException">资源名称不能为空</exception>
+        public ResourceAttribute(string name)
         {
-            if (string.IsNullOrWhiteSpace(action))
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("操作键不能为空。", nameof(action));
+                throw new ArgumentNullException(nameof(name));
             }
-
-            Action = action;
-            ActionName = actionName;
-            Description = description;
-            Policy = action;
-        }
-
-        /// <summary>
-        /// 初始化包含完整模块信息的资源操作授权要求。
-        /// </summary>
-        /// <param name="resource">稳定的英文模块键。</param>
-        /// <param name="action">稳定的英文操作键。</param>
-        /// <param name="resourceName">模块展示名称。</param>
-        /// <param name="actionName">操作展示名称。</param>
-        /// <param name="description">操作介绍。</param>
-        public ResourceAttribute(string resource, string action, string resourceName, string actionName, string? description = null)
-        {
-            if (string.IsNullOrWhiteSpace(resource))
+            string[] resourceValues = name.Split('-');
+            _resouceName = resourceValues[0];
+            if (resourceValues.Length > 1)
             {
-                throw new ArgumentException("资源键不能为空。", nameof(resource));
+                Action = resourceValues[1];
             }
-            if (string.IsNullOrWhiteSpace(action))
+            else
             {
-                throw new ArgumentException("操作键不能为空。", nameof(action));
+                Policy = resourceValues[0];
             }
-
-            Resource = resource;
-            Action = action;
-            ResourceName = resourceName;
-            ActionName = actionName;
-            Description = description;
-            Policy = Permission;
-        }
-
-        internal ResourceAttribute(string resource, string action)
-        {
-            Resource = resource;
-            Action = action;
-            ActionName = action;
-            Policy = Permission;
         }
 
         /// <summary>
-        /// 稳定的资源键。
+        /// 显式设置资源类型与操作
         /// </summary>
-        public string? Resource { get; private set; }
-
-        /// <summary>
-        /// 稳定的操作键。
-        /// </summary>
-        public string Action { get; }
-
-        /// <summary>
-        /// 模块展示名称。
-        /// </summary>
-        public string? ResourceName { get; private set; }
-
-        /// <summary>
-        /// 操作展示名称。
-        /// </summary>
-        public string ActionName { get; }
-
-        /// <summary>
-        /// 操作介绍。
-        /// </summary>
-        public string? Description { get; }
-
-        /// <summary>
-        /// 权限 Claim 与授权策略使用的稳定权限码。
-        /// </summary>
-        public string Permission => $"{Resource}.{Action}";
-
-        internal void SetModule(ResourceModuleAttribute module)
+        /// <param name="resource">资源名称</param>
+        /// <param name="action">操作名称</param>
+        /// <exception cref="ArgumentNullException">资源名称不能为空</exception>
+        public ResourceAttribute(string resource, string action)
         {
-            if (Resource is not null)
+            if (string.IsNullOrEmpty(resource))
             {
-                return;
+                throw new ArgumentNullException(nameof(resource));
             }
-
-            Resource = module.Resource;
-            ResourceName = module.Name;
-            Policy = Permission;
+            _resouceName = resource;
+            _action = action;
+            Policy = string.IsNullOrEmpty(action) ? resource : $"{resource}-{action}";
         }
-    }
 
-    /// <summary>
-    /// 为 Controller 中的资源操作提供默认模块信息。
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public sealed class ResourceModuleAttribute : Attribute
-    {
         /// <summary>
-        /// 初始化模块定义。
+        /// 获取资源名称
         /// </summary>
-        /// <param name="resource">稳定的英文模块键。</param>
-        /// <param name="name">模块展示名称。</param>
-        public ResourceModuleAttribute(string resource, string name)
+        /// <returns></returns>
+        public string GetResource()
         {
-            Resource = string.IsNullOrWhiteSpace(resource) ? throw new ArgumentException("模块键不能为空。", nameof(resource)) : resource;
-            Name = name;
+            return _resouceName;
         }
 
         /// <summary>
-        /// 稳定的模块键。
+        /// 获取操作名称
         /// </summary>
-        public string Resource { get; }
-
-        /// <summary>
-        /// 模块展示名称。
-        /// </summary>
-        public string Name { get; }
+        public string? Action
+        {
+            get
+            {
+                return _action;
+            }
+            set
+            {
+                _action = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    //把资源名称跟操作名称组装成Policy
+                    Policy = _resouceName + "-" + value;
+                }
+            }
+        }
     }
 }

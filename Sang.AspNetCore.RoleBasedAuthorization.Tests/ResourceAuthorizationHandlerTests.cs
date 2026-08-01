@@ -36,7 +36,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
             {
                 new Claim(ClaimTypes.Role, ResourceRole.Administrator)
             }));
-            var requirement = new ResourceAttribute("resource", "action");
+            var requirement = new ResourceAttribute("Resource", "Action");
             var context = CreateContext(user, requirement);
 
             await handler.HandleAsync(context);
@@ -52,7 +52,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
             {
                 new Claim(ClaimTypes.Role, "Admin")
             }));
-            var requirement = new ResourceAttribute("resource", "action");
+            var requirement = new ResourceAttribute("Resource", "Action");
             var context = CreateContext(user, requirement);
 
             await handler.HandleAsync(context);
@@ -68,7 +68,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
             {
                 new Claim(ClaimTypes.Role, "User")
             }));
-            var requirement = new ResourceAttribute("resource", "action");
+            var requirement = new ResourceAttribute("Resource", "Action");
             var context = CreateContext(user, requirement);
 
             await handler.HandleAsync(context);
@@ -77,20 +77,21 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
         }
 
         [Theory]
-        [InlineData("resource", "action", "resource", true)]
-        [InlineData("resource", "action", "other", false)]
-        [InlineData("resource", "action", "resource.action", true)]
-        [InlineData("resource", "action", "resource.other", false)]
-        [InlineData("resource", "action", "resource.*", true)]
-        [InlineData("resource", "action", "*", true)]
-        public async Task HandleRequirementAsync_PermissionClaim_MatchesCorrectly(string resource, string action, string permissionValue, bool expectedSuccess)
+        [InlineData("Resource", "Resource", true)]
+        [InlineData("Resource", "Other", false)]
+        [InlineData("Resource-Action", "Resource", true)]
+        [InlineData("Resource-Action", "Resource-Action", true)]
+        [InlineData("Resource-Action", "Resource-Other", false)]
+        [InlineData("Resource-Action", "Resource-*", true)]
+        [InlineData("Resource-Action", "*", true)]
+        public async Task HandleRequirementAsync_PermissionClaim_MatchesCorrectly(string requirementName, string permissionValue, bool expectedSuccess)
         {
             var handler = CreateHandler();
             var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ResourceClaimTypes.Permission, permissionValue)
             }));
-            var requirement = new ResourceAttribute(resource, action);
+            var requirement = new ResourceAttribute(requirementName);
             var context = CreateContext(user, requirement);
 
             await handler.HandleAsync(context);
@@ -102,7 +103,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
         public async Task HandleRequirementAsync_NullUser_DoesNotSucceed()
         {
             var handler = CreateHandler();
-            var requirement = new ResourceAttribute("resource", "action");
+            var requirement = new ResourceAttribute("Resource", "Action");
             var context = new AuthorizationHandlerContext(
                 new[] { requirement },
                 null!,
