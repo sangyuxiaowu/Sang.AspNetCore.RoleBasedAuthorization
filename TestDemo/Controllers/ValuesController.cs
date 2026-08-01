@@ -11,6 +11,7 @@ namespace TestDemo.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [ResourceModule("values", "数值")]
     public class ValuesController : ControllerBase
     {
         
@@ -18,7 +19,7 @@ namespace TestDemo.Controllers
         /// 查询数值
         /// </summary>
         /// <returns></returns>
-        [Resource("查询", Action = "数值")]
+        [Resource("read", "查看数值", "允许查看数值列表")]
         [HttpGet]
         public IEnumerable<string> Get()
         {
@@ -30,7 +31,7 @@ namespace TestDemo.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [Resource("查询-单个数值")]
+        [Resource("read-detail", "查看数值详情", "允许查看单个数值")]
         [HttpGet("{id}")]
         public string Get(int id)
         {
@@ -42,11 +43,11 @@ namespace TestDemo.Controllers
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        [Resource("新建-数值")]
+        [Resource("create", "新建数值", "允许新建数值")]
         [HttpPost]
         public IActionResult Post([FromBody] string value)
         {
-            return Ok("新建-数值");
+            return Ok("数值.新建");
         }
 
         /// <summary>
@@ -55,22 +56,22 @@ namespace TestDemo.Controllers
         /// <param name="id"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        [Resource("更新-数值")]
+        [Resource("update", "更新数值", "允许更新数值")]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] string value)
         {
-            return Ok("更新-数值");
+            return Ok("数值.更新");
         }
 
         /// <summary>
         /// 删除-数值
         /// </summary>
         /// <param name="id"></param>
-        [Resource("删除-数值")]
+        [Resource("delete", "删除数值", "允许删除数值")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            return Ok("删除-数值");
+            return Ok("数值.删除");
         }
     }
 }

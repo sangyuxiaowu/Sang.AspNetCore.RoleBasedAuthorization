@@ -3,28 +3,20 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
     public class ResourceDataTests
     {
         [Fact]
-        public void AddResource_WithDescription_AddsResourceInfo()
+        public void GetResourceInfos_ReturnsHierarchicalPermissionDetails()
         {
-            var originalResources = ResourceData.Resources;
-            var originalResourceInfos = ResourceData.ResourceInfos;
-            ResourceData.Resources = new Dictionary<string, List<string>>();
-            ResourceData.ResourceInfos = new List<ResourceInfo>();
-
-            try
+            ResourceData.SetPermissions(new[]
             {
-                ResourceData.AddResource("Roles", "View", "Allows viewing system role definitions");
+                new ResourceAttribute("roles", "read", "角色权限", "查看角色列表", "允许浏览系统角色定义"),
+                new ResourceAttribute("roles", "delete", "角色权限", "删除角色", "允许删除非系统内置角色")
+            });
 
-                var resourceInfo = Assert.Single(ResourceData.ResourceInfos);
-                Assert.Equal("Roles", resourceInfo.Resource);
-                Assert.Equal("View", resourceInfo.Action);
-                Assert.Equal("Allows viewing system role definitions", resourceInfo.Description);
-                Assert.Equal(new[] { "View" }, ResourceData.Resources["Roles"]);
-            }
-            finally
-            {
-                ResourceData.Resources = originalResources;
-                ResourceData.ResourceInfos = originalResourceInfos;
-            }
+            var resourceInfo = Assert.Single(ResourceData.GetResourceInfos());
+            Assert.Equal("roles", resourceInfo.ResourceKey);
+            Assert.Equal("角色权限", resourceInfo.ResourceName);
+            Assert.Equal(2, resourceInfo.Actions.Count);
+            Assert.Contains(resourceInfo.Actions, action => action.Permission == "roles.read" && action.ActionName == "查看角色列表");
+            Assert.Contains(resourceInfo.Actions, action => action.Permission == "roles.delete" && action.Description == "允许删除非系统内置角色");
         }
     }
 }

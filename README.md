@@ -38,31 +38,26 @@ builder.Services.AddSangRoleBasedAuthorization(options =>
 Add the `ResourceAttribute` tag to the Controller or action that needs to be authorized:
 
 ```csharp
-[Resource("Resource")]
 [Route("api/[controller]")]
 [ApiController]
+[ResourceModule("roles", "Role permissions")]
 public class RolesController : ControllerBase
 {
+    [Resource("delete", "Delete role", "Allows deleting non-system roles")]
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        return Ok();
+    }
 }
 ```
 
-Optionally provide a display description for permission-management UIs. `Description` is not used during authorization:
+The resource and action keys are stable English identifiers and form the `roles.delete` permission code. Display names and descriptions stay next to the endpoint, making authorization intent self-documenting.
+
+Use the complete form for an operation outside a controller's module:
 
 ```csharp
-[Resource("Role Permissions", "View role list", Description = "Allows viewing system role definitions")]
-```
-
-```csharp
-/// <summary>
-/// Delete - Value
-/// </summary>
-/// <param name="id"></param>
-[Resource("Delete", "Value")]
-[HttpDelete("{id}")]
-public IActionResult Delete(int id)
-{
-    return Ok("Delete-Value");
-}
+[Resource("weather", "read", "Weather", "View weather", "Allows viewing weather forecasts")]
 ```
 
 ##### Step 4
@@ -146,14 +141,50 @@ Whether to always check and execute the addition. By default, the middleware onl
 
 The authorization handler supports the following permission claim formats:
 
-- `"Resource"` — grants all actions under the resource.
-- `"Resource-Action"` — grants a specific action.
-- `"Resource-*"` — grants all actions under the resource (explicit wildcard).
+- `"roles"` — grants all actions under the resource.
+- `"roles.delete"` — grants a specific action.
+- `"roles.*"` — grants all actions under the resource (explicit wildcard).
 - `"*"` — grants all resources and actions (global super-administrator permission).
 
 ## Resource Details
 
-`ResourceData.ResourceInfos` provides the resource, action, and optional description for permission-management UIs. The existing `ResourceData.Resources` remains unchanged.
+Use `ResourceData.GetResourceInfos()` to retrieve hierarchical metadata for permissions actually used by the application:
+
+```csharp
+var permissions = ResourceData.GetResourceInfos();
+```
+
+The result groups actions under their resource:
+
+```json
+[
+    {
+        "resourceKey": "values",
+        "resourceName": "Values",
+        "actions": [
+            {
+                "actionKey": "read",
+                "actionName": "View values",
+                "description": "Allows viewing value lists",
+                "permission": "values.read"
+            }
+        ]
+    }
+]
+```
+
+### Frontend Localization
+
+`ResourceName`, `ActionName`, and `Description` are default display text. Frontends can use `ResourceKey` and `Permission` as translation keys, then fall back to the backend text when a translation is absent. This avoids additional name-key fields.
+
+```json
+{
+    "zh-CN": {
+        "values": { "name": "数值" },
+        "values.read": { "name": "查看数值", "description": "允许查看数值列表" }
+    }
+}
+```
 
 ## Demo
 

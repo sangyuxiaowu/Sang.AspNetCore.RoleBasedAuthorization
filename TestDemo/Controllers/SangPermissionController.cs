@@ -20,16 +20,22 @@ namespace TestDemo.Controllers
 
         private readonly IOptionsSnapshot<JWTSettings> _jwtSettings;
         private readonly ILogger<SangPermissionController> _logger;
+        private readonly IPermissionLocalizer _permissionLocalizer;
 
         /// <summary>
         /// 查询
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="jwtSettings"></param>
-        public SangPermissionController(ILogger<SangPermissionController> logger, IOptionsSnapshot<JWTSettings> jwtSettings)
+        /// <param name="permissionLocalizer">权限文案本地化服务。</param>
+        public SangPermissionController(
+            ILogger<SangPermissionController> logger,
+            IOptionsSnapshot<JWTSettings> jwtSettings,
+            IPermissionLocalizer permissionLocalizer)
         {
             _logger = logger;
             _jwtSettings = jwtSettings;
+            _permissionLocalizer = permissionLocalizer;
         }
 
         /// <summary>
@@ -37,9 +43,11 @@ namespace TestDemo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("Resources")]
-        public IActionResult Resources()
+        public IActionResult Resources([FromQuery] string? culture = null)
         {
-            return Ok(ResourceData.ResourceInfos);
+            var requestedCulture = culture ?? Request.Headers.AcceptLanguage.FirstOrDefault()?.Split(',', 2)[0];
+            var resolvedCulture = _permissionLocalizer.ResolveCulture(requestedCulture);
+            return Ok(ResourceData.GetResourceInfos().Localize(_permissionLocalizer, resolvedCulture));
         }
 
         /// <summary>
@@ -98,7 +106,7 @@ namespace TestDemo.Controllers
         /// 查询天气
         /// </summary>
         /// <returns></returns>
-        [Resource("查询",Action ="天气")]
+        [Resource("weather", "read", "天气", "查看天气", "允许查看天气预报")]
         [HttpGet("getweather")]
         public IActionResult Get()
         {

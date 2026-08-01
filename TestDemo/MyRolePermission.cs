@@ -48,7 +48,7 @@ namespace TestDemo
         // 以下为演示，实际使用可根据用户 ID 查询直接授予的权限
         public static Dictionary<string, List<string>> MyUser { get; set; } = new()
         {
-            ["uid"] = new List<string> { "查询" }
+            ["uid"] = new List<string> { "values.read" }
         };
 
         /// <summary>

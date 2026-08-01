@@ -38,31 +38,26 @@ builder.Services.AddSangRoleBasedAuthorization(options =>
 在需要进行授权检查的 Controller 或 Action 处添加 `ResourceAttribute` 标记：
 
 ```csharp
-[Resource("资源")]
 [Route("api/[controller]")]
 [ApiController]
+[ResourceModule("roles", "角色权限")]
 public class RolesController : ControllerBase
 {
+    [Resource("delete", "删除角色", "允许删除非系统内置角色")]
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        return Ok();
+    }
 }
 ```
 
-可选地通过 `Description` 为权限管理界面提供操作介绍，该字段不参与授权判断：
+模块键和操作键使用稳定英文标识，组合为权限码 `roles.delete`；中文名称和介绍随接口定义，既可直接供前端展示，也便于在代码中理解授权意图。
+
+少数跨模块操作可使用完整形式：
 
 ```csharp
-[Resource("角色权限", "查看角色列表", Description = "允许浏览系统角色定义")]
-```
-
-```csharp
-/// <summary>
-/// 删除-数值
-/// </summary>
-/// <param name="id"></param>
-[Resource("删除", "数值")]
-[HttpDelete("{id}")]
-public IActionResult Delete(int id)
-{
-    return Ok("删除-数值");
-}
+[Resource("weather", "read", "天气", "查看天气", "允许查看天气预报")]
 ```
 
 ##### 步骤 4
@@ -146,14 +141,50 @@ app.UseAuthorization();
 
 授权处理支持以下权限 Claim 格式：
 
-- `"资源"` — 授予该资源下的所有操作。
-- `"资源-操作"` — 授予指定操作。
-- `"资源-*"` — 显式通配，授予该资源下的所有操作。
+- `"roles"` — 授予模块下的所有操作。
+- `"roles.delete"` — 授予指定操作。
+- `"roles.*"` — 显式通配，授予模块下的所有操作。
 - `"*"` — 全局通配，授予所有资源和操作（全局超级管理员权限）。
 
 ## 资源详情
 
-`ResourceData.ResourceInfos` 提供模块、操作和可选介绍，适合直接返回给前端构建权限矩阵；原有的 `ResourceData.Resources` 保持不变。
+通过 `ResourceData.GetResourceInfos()` 获取当前应用实际使用的层级权限详情：
+
+```csharp
+var permissions = ResourceData.GetResourceInfos();
+```
+
+返回结构按模块分组，每个模块包含操作列表：
+
+```json
+[
+    {
+        "resourceKey": "values",
+        "resourceName": "数值",
+        "actions": [
+            {
+                "actionKey": "read",
+                "actionName": "查看数值",
+                "description": "允许查看数值列表",
+                "permission": "values.read"
+            }
+        ]
+    }
+]
+```
+
+### 前端本地化建议
+
+后端返回的 `ResourceName`、`ActionName` 和 `Description` 是默认展示文本。前端可直接使用 `ResourceKey` 与 `Permission` 作为翻译键覆盖当前语言；找不到翻译时回退到后端默认文本，无需额外维护 `NameKey`。
+
+```json
+{
+    "en-US": {
+        "values": { "name": "Values" },
+        "values.read": { "name": "View values", "description": "Allows viewing value lists" }
+    }
+}
+```
 
 ## Demo
 
