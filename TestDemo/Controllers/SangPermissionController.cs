@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+ï»¿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -11,7 +11,7 @@ namespace TestDemo.Controllers
 {
 
     /// <summary>
-    /// ²âÊÔRBAC
+    /// æµ‹è¯•RBAC
     /// </summary>
     [ApiController]
     [Route("[controller]")]
@@ -20,32 +20,40 @@ namespace TestDemo.Controllers
 
         private readonly IOptionsSnapshot<JWTSettings> _jwtSettings;
         private readonly ILogger<SangPermissionController> _logger;
+        private readonly IPermissionLocalizer _permissionLocalizer;
 
         /// <summary>
-        /// ²éÑ¯
+        /// æŸ¥è¯¢
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="jwtSettings"></param>
-        public SangPermissionController(ILogger<SangPermissionController> logger, IOptionsSnapshot<JWTSettings> jwtSettings)
+        /// <param name="permissionLocalizer">æƒé™æ–‡æ¡ˆæœ¬åœ°åŒ–æœåŠ¡ã€‚</param>
+        public SangPermissionController(
+            ILogger<SangPermissionController> logger,
+            IOptionsSnapshot<JWTSettings> jwtSettings,
+            IPermissionLocalizer permissionLocalizer)
         {
             _logger = logger;
             _jwtSettings = jwtSettings;
+            _permissionLocalizer = permissionLocalizer;
         }
 
         /// <summary>
-        /// È«²¿È¨ÏŞÁĞ±í
+        /// å…¨éƒ¨æƒé™åˆ—è¡¨
         /// </summary>
         /// <returns></returns>
         [HttpGet("Resources")]
-        public IActionResult Resources()
+        public IActionResult Resources([FromQuery] string? culture = null)
         {
-            return Ok(ResourceData.Resources);
+            var requestedCulture = culture ?? Request.Headers.AcceptLanguage.FirstOrDefault()?.Split(',', 2)[0];
+            var resolvedCulture = _permissionLocalizer.ResolveCulture(requestedCulture);
+            return Ok(ResourceData.GetResourceInfos().Localize(_permissionLocalizer, resolvedCulture));
         }
 
         /// <summary>
-        /// ÓÃ»§µÇÂ¼
+        /// ç”¨æˆ·ç™»å½•
         /// </summary>
-        /// <param name="roleName">µÇÂ¼ÓÃ»§µÄ½ÇÉ«</param>
+        /// <param name="roleName">ç™»å½•ç”¨æˆ·çš„è§’è‰²</param>
         /// <returns></returns>
         [HttpGet("login")]
         public IActionResult CheckPassword(string? roleName)
@@ -55,12 +63,12 @@ namespace TestDemo.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, "uid"),
-                new Claim(ClaimTypes.Name,"ÓÃ»§Ãû"),
+                new Claim(ClaimTypes.Name,"ç”¨æˆ·å"),
                 new Claim(ClaimTypes.Email,"test@exp.com"),
                 new Claim(ClaimTypes.Role, "user"),
-                new Claim(ResourceClaimTypes.Permission,"²éÑ¯"),
+                //new Claim(ResourceClaimTypes.Permission,"æŸ¥è¯¢"),
             };
-            // Ìí¼Ó½ÇÉ«Ãû
+            // æ·»åŠ è§’è‰²å
             if (!string.IsNullOrWhiteSpace(roleName)) claims.Add(new Claim(ClaimTypes.Role, roleName));
             var token = new JwtSecurityToken(
                     "Issuer",
@@ -77,7 +85,7 @@ namespace TestDemo.Controllers
         }
 
         /// <summary>
-        /// ÓÃ»§ĞÅÏ¢
+        /// ç”¨æˆ·ä¿¡æ¯
         /// </summary>
         /// <returns></returns>
         [HttpGet("user")]
@@ -95,14 +103,14 @@ namespace TestDemo.Controllers
         }
 
         /// <summary>
-        /// ²éÑ¯ÌìÆø
+        /// æŸ¥è¯¢å¤©æ°”
         /// </summary>
         /// <returns></returns>
-        [Resource("²éÑ¯",Action ="ÌìÆø")]
+        [Resource("weather", "read", "å¤©æ°”", "æŸ¥çœ‹å¤©æ°”", "å…è®¸æŸ¥çœ‹å¤©æ°”é¢„æŠ¥")]
         [HttpGet("getweather")]
         public IActionResult Get()
         {
-            return Ok("²éÑ¯-ÌìÆø");
+            return Ok("æŸ¥è¯¢-å¤©æ°”");
         }
 
 
