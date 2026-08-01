@@ -85,5 +85,10 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
                 }
             }
         }
+
+        /// <summary>
+        /// 资源操作的介绍，用于权限管理界面展示，不参与授权判断。
+        /// </summary>
+        public string? Description { get; set; }
     }
 }

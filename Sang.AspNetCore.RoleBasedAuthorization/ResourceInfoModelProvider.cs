@@ -55,7 +55,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             // 整理信息集中存入全局
             foreach (var item in attributeData)
             {
-                ResourceData.AddResource(item.GetResource(), item.Action);
+                ResourceData.AddResource(item.GetResource(), item.Action, item.Description);
             }
         }
 

@@ -46,6 +46,12 @@ public class RolesController : ControllerBase
 }
 ```
 
+可选地通过 `Description` 为权限管理界面提供操作介绍，该字段不参与授权判断：
+
+```csharp
+[Resource("角色权限", "查看角色列表", Description = "允许浏览系统角色定义")]
+```
+
 ```csharp
 /// <summary>
 /// 删除-数值
@@ -144,6 +150,10 @@ app.UseAuthorization();
 - `"资源-操作"` — 授予指定操作。
 - `"资源-*"` — 显式通配，授予该资源下的所有操作。
 - `"*"` — 全局通配，授予所有资源和操作（全局超级管理员权限）。
+
+## 资源详情
+
+`ResourceData.ResourceInfos` 提供模块、操作和可选介绍，适合直接返回给前端构建权限矩阵；原有的 `ResourceData.Resources` 保持不变。
 
 ## Demo
 

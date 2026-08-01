@@ -14,6 +14,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         static ResourceData()
         {
             Resources = new Dictionary<string, List<string>>();
+            ResourceInfos = new List<ResourceInfo>();
         }
 
         /// <summary>
@@ -22,7 +23,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// <param name="name">名称</param>
         public static void AddResource(string name)
         {
-            AddResource(name, "");
+            AddResource(name, null, null);
         }
 
         /// <summary>
@@ -30,7 +31,8 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// </summary>
         /// <param name="name">名称</param>
         /// <param name="action">操作</param>
-        public static void AddResource(string name, string? action)
+        /// <param name="description">介绍</param>
+        public static void AddResource(string name, string? action, string? description = null)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -45,11 +47,60 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
             {
                 Resources[name].Add(action);
             }
+
+            var resourceInfo = ResourceInfos.FirstOrDefault(item =>
+                string.Equals(item.Resource, name, StringComparison.Ordinal)
+                && string.Equals(item.Action, action, StringComparison.Ordinal));
+            if (resourceInfo is null)
+            {
+                ResourceInfos.Add(new ResourceInfo
+                {
+                    Resource = name,
+                    Action = action,
+                    Description = description
+                });
+            }
+            else if (!string.IsNullOrEmpty(description)
+                && !string.IsNullOrEmpty(resourceInfo.Description)
+                && !string.Equals(resourceInfo.Description, description, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"资源 '{name}' 的操作 '{action}' 定义了不同的介绍。");
+            }
+            else if (!string.IsNullOrEmpty(description))
+            {
+                resourceInfo.Description = description;
+            }
         }
 
         /// <summary>
         /// 资源信息
         /// </summary>
         public static Dictionary<string, List<string>> Resources { get; set; }
+
+        /// <summary>
+        /// 包含模块、操作及介绍的资源详情。
+        /// </summary>
+        public static List<ResourceInfo> ResourceInfos { get; set; }
+    }
+
+    /// <summary>
+    /// 权限管理界面使用的资源详情。
+    /// </summary>
+    public class ResourceInfo
+    {
+        /// <summary>
+        /// 模块名称。
+        /// </summary>
+        public string Resource { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 操作名称。
+        /// </summary>
+        public string? Action { get; set; }
+
+        /// <summary>
+        /// 操作介绍。
+        /// </summary>
+        public string? Description { get; set; }
     }
 }

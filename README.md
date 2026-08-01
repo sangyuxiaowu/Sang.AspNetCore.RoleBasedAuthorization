@@ -46,6 +46,12 @@ public class RolesController : ControllerBase
 }
 ```
 
+Optionally provide a display description for permission-management UIs. `Description` is not used during authorization:
+
+```csharp
+[Resource("Role Permissions", "View role list", Description = "Allows viewing system role definitions")]
+```
+
 ```csharp
 /// <summary>
 /// Delete - Value
@@ -144,6 +150,10 @@ The authorization handler supports the following permission claim formats:
 - `"Resource-Action"` — grants a specific action.
 - `"Resource-*"` — grants all actions under the resource (explicit wildcard).
 - `"*"` — grants all resources and actions (global super-administrator permission).
+
+## Resource Details
+
+`ResourceData.ResourceInfos` provides the resource, action, and optional description for permission-management UIs. The existing `ResourceData.Resources` remains unchanged.
 
 ## Demo
 

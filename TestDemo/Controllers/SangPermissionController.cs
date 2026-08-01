@@ -39,7 +39,7 @@ namespace TestDemo.Controllers
         [HttpGet("Resources")]
         public IActionResult Resources()
         {
-            return Ok(ResourceData.Resources);
+            return Ok(ResourceData.ResourceInfos);
         }
 
         /// <summary>

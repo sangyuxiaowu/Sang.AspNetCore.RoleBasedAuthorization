@@ -70,5 +70,17 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
             Assert.IsAssignableFrom<AuthorizeAttribute>(attr);
             Assert.IsAssignableFrom<IAuthorizationRequirement>(attr);
         }
+
+        [Fact]
+        public void Description_SetsDisplayOnlyMetadata()
+        {
+            var attr = new ResourceAttribute("Roles", "View")
+            {
+                Description = "Allows viewing system role definitions"
+            };
+
+            Assert.Equal("Allows viewing system role definitions", attr.Description);
+            Assert.Equal("Roles-View", attr.Policy);
+        }
     }
 }
