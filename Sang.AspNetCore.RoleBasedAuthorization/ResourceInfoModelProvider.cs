@@ -13,12 +13,12 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// 执行的排序
         /// 首先 (Order=-1000)：
         /// DefaultApplicationModelProvider
-        /// 然后(Order= -990)：
+        /// 然后是这个，用于补全 ResourceAttribute 的模块信息：
         /// AuthorizationApplicationModelProvider
         /// CorsApplicationModelProvider
-        /// 接着是这个
+        /// 接着是 AuthorizationApplicationModelProvider
         /// </summary>
-        public int Order => -989;
+        public int Order => -991;
 
         /// <summary>
         /// 基于其 Order 属性以倒序调用
@@ -52,11 +52,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
                     }
                 }
             }
-            // 整理信息集中存入全局
-            foreach (var item in attributeData)
-            {
-                ResourceData.AddResource(item.GetResource(), item.Action);
-            }
+            ResourceData.SetPermissions(attributeData.DistinctBy(attribute => attribute.Permission, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -65,7 +61,25 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// <param name="context"></param>
         public void OnProvidersExecuting(ApplicationModelProviderContext context)
         {
+            foreach (var controller in context.Result.Controllers)
+            {
+                var module = controller.Attributes.OfType<ResourceModuleAttribute>().SingleOrDefault();
+                foreach (var action in controller.Actions)
+                {
+                    foreach (var resource in action.Attributes.OfType<ResourceAttribute>())
+                    {
+                        if (resource.Resource is null)
+                        {
+                            if (module is null)
+                            {
+                                throw new InvalidOperationException($"操作 '{resource.Action}' 未定义模块，请在 Controller 上添加 ResourceModuleAttribute 或使用完整的 ResourceAttribute 构造函数。");
+                            }
 
+                            resource.SetModule(module);
+                        }
+                    }
+                }
+            }
         }
     }
 

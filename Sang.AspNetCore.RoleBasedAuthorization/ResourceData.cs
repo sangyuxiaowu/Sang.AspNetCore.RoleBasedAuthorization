@@ -1,55 +1,84 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Sang.AspNetCore.RoleBasedAuthorization
+﻿namespace Sang.AspNetCore.RoleBasedAuthorization
 {
     /// <summary>
-    /// 全局存储或获取项目中含有的 Resource 特性
+    /// 获取当前应用已使用权限的本地化详情。
     /// </summary>
     public class ResourceData
     {
-        static ResourceData()
-        {
-            Resources = new Dictionary<string, List<string>>();
-        }
+        private static IReadOnlyList<ResourceInfo> _resources = Array.Empty<ResourceInfo>();
 
         /// <summary>
-        /// 添加资源
+        /// 获取当前应用已使用权限的层级详情。
         /// </summary>
-        /// <param name="name">名称</param>
-        public static void AddResource(string name)
-        {
-            AddResource(name, "");
-        }
+        public static IReadOnlyList<ResourceInfo> GetResourceInfos() => _resources;
 
         /// <summary>
-        /// 添加资源
+        /// 设置当前应用控制器实际使用的权限。
         /// </summary>
-        /// <param name="name">名称</param>
-        /// <param name="action">操作</param>
-        public static void AddResource(string name, string? action)
+        internal static void SetPermissions(IEnumerable<ResourceAttribute> permissions)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return;
-            }
-            if (!Resources.ContainsKey(name))
-            {
-                Resources.Add(name, new List<string>());
-            }
-
-            if (!string.IsNullOrEmpty(action) && !Resources[name].Contains(action))
-            {
-                Resources[name].Add(action);
-            }
+            _resources = permissions
+                .GroupBy(permission => permission.Resource!, StringComparer.OrdinalIgnoreCase)
+                .Select(group => new ResourceInfo
+                {
+                    ResourceKey = group.Key,
+                    ResourceName = group.First().ResourceName ?? group.Key,
+                    Actions = group.Select(permission => new ResourceActionInfo
+                    {
+                        ActionKey = permission.Action,
+                        ActionName = permission.ActionName,
+                        Description = permission.Description,
+                        Permission = permission.Permission
+                    }).ToList()
+                })
+                .ToList();
         }
+    }
+
+    /// <summary>
+    /// 权限管理界面使用的资源详情。
+    /// </summary>
+    public class ResourceInfo
+    {
+        /// <summary>
+        /// 模块键。
+        /// </summary>
+        public string ResourceKey { get; init; } = string.Empty;
 
         /// <summary>
-        /// 资源信息
+        /// 模块展示名称。
         /// </summary>
-        public static Dictionary<string, List<string>> Resources { get; set; }
+        public string ResourceName { get; init; } = string.Empty;
+
+        /// <summary>
+        /// 模块下实际使用的操作。
+        /// </summary>
+        public IReadOnlyList<ResourceActionInfo> Actions { get; init; } = Array.Empty<ResourceActionInfo>();
+    }
+
+    /// <summary>
+    /// 权限模块下的操作详情。
+    /// </summary>
+    public class ResourceActionInfo
+    {
+        /// <summary>
+        /// 操作键。
+        /// </summary>
+        public string ActionKey { get; init; } = string.Empty;
+
+        /// <summary>
+        /// 操作展示名称。
+        /// </summary>
+        public string ActionName { get; init; } = string.Empty;
+
+        /// <summary>
+        /// 操作介绍。
+        /// </summary>
+        public string? Description { get; init; }
+
+        /// <summary>
+        /// 稳定的权限码。
+        /// </summary>
+        public string Permission { get; init; } = string.Empty;
     }
 }

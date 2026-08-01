@@ -20,11 +20,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
         /// <exception cref="ArgumentNullException">授权配置为空</exception>
         public ResourceAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            _options = options.Value;
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
         /// <summary>
@@ -65,9 +61,17 @@ namespace Sang.AspNetCore.RoleBasedAuthorization
                     policy = _options.GetPolicy(policyName);
                     if (policy is null)
                     {
+                        var separatorIndex = policyName.LastIndexOf('.');
+                        if (separatorIndex <= 0 || separatorIndex == policyName.Length - 1)
+                        {
+                            throw new InvalidOperationException($"策略 '{policyName}' 不是有效的权限码。");
+                        }
+
+                        var resource = policyName[..separatorIndex];
+                        var action = policyName[(separatorIndex + 1)..];
                         _options.AddPolicy(policyName, builder =>
                         {
-                            builder.AddRequirements(new ResourceAttribute(policyName));
+                            builder.AddRequirements(new ResourceAttribute(resource, action));
                         });
                         policy = _options.GetPolicy(policyName);
                     }
