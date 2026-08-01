@@ -19,7 +19,7 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
         {
             var provider = CreateProvider();
 
-            var policy = await provider.GetPolicyAsync("Resource-Action");
+            var policy = await provider.GetPolicyAsync("resource.action");
 
             Assert.NotNull(policy);
             Assert.Single(policy.Requirements);
@@ -31,8 +31,8 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
         {
             var provider = CreateProvider();
 
-            var policy1 = await provider.GetPolicyAsync("Resource-Action");
-            var policy2 = await provider.GetPolicyAsync("Resource-Action");
+            var policy1 = await provider.GetPolicyAsync("resource.action");
+            var policy2 = await provider.GetPolicyAsync("resource.action");
 
             Assert.Same(policy1, policy2);
         }
@@ -41,12 +41,12 @@ namespace Sang.AspNetCore.RoleBasedAuthorization.Tests
         public async Task GetPolicyAsync_ExistingPolicy_ReturnsExisting()
         {
             var options = new AuthorizationOptions();
-            options.AddPolicy("ExistingPolicy", policy => policy.Requirements.Add(new ResourceAttribute("ExistingPolicy")));
+            options.AddPolicy("resource.action", policy => policy.Requirements.Add(new ResourceAttribute("resource", "action", "Resource", "Action")));
             var mockOptions = new Mock<IOptions<AuthorizationOptions>>();
             mockOptions.Setup(x => x.Value).Returns(options);
             var provider = new ResourceAuthorizationPolicyProvider(mockOptions.Object);
 
-            var policy = await provider.GetPolicyAsync("ExistingPolicy");
+            var policy = await provider.GetPolicyAsync("resource.action");
 
             Assert.NotNull(policy);
             Assert.Single(policy.Requirements);

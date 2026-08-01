@@ -74,6 +74,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // 添加 Sang RBAC 服务
 builder.Services.AddSangRoleBasedAuthorization();
+builder.Services.Configure<PermissionLocalizationOptions>(builder.Configuration.GetSection(PermissionLocalizationOptions.SectionName));
+builder.Services.AddSingleton<IPermissionLocalizer>(serviceProvider =>
+    new ConfigurationPermissionLocalizer(serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PermissionLocalizationOptions>>().Value));
 // 添加 角色权限查询服务
 builder.Services.AddRolePermission<MyRolePermission>();
 

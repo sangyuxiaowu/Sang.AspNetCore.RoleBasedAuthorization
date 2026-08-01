@@ -38,32 +38,32 @@ builder.Services.AddSangRoleBasedAuthorization(options =>
 在需要进行授权检查的 Controller 或 Action 处添加 `ResourceAttribute` 标记：
 
 ```csharp
-[Resource("资源")]
 [Route("api/[controller]")]
 [ApiController]
+[ResourceModule("roles", "角色权限")]
 public class RolesController : ControllerBase
 {
+    [Resource("delete", "删除角色", "允许删除非系统内置角色")]
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        return Ok();
+    }
 }
 ```
 
+模块键和操作键使用稳定英文标识，组合为权限码 `roles.delete`；中文名称和介绍随接口定义，既可直接供前端展示，也便于在代码中理解授权意图。
+
+少数跨模块操作可使用完整形式：
+
 ```csharp
-/// <summary>
-/// 删除-数值
-/// </summary>
-/// <param name="id"></param>
-[Resource("删除", "数值")]
-[HttpDelete("{id}")]
-public IActionResult Delete(int id)
-{
-    return Ok("删除-数值");
-}
+[Resource("weather", "read", "天气", "查看天气", "允许查看天气预报")]
 ```
 
 ##### 步骤 4
 
 完成以上操作后，授权检查将验证 `User.Claims` 是否存在对应的 `Permission`。
-需要为用户添加对应的 `Claims`，可以在生成 JWT Token 时直接包含。
-也可以使用中间件读取对应的角色，在授权检查前添加，可以自己实现也可以使用下一节介绍的功能。
+可以在生成 JWT Token 时直接包含，也可以使用下一节的中间件在授权检查前按角色或用户标识读取并添加；使用中间件时 JWT 无需包含 `Permission`。
 
 ```csharp
 var claims = new List<Claim>
@@ -72,7 +72,6 @@ var claims = new List<Claim>
     new Claim(ClaimTypes.Name, "用户名"),
     new Claim(ClaimTypes.Email, "test@exp.com"),
     new Claim(ClaimTypes.Role, "user"),
-    new Claim(ResourceClaimTypes.Permission, "查询"),
 };
 var token = new JwtSecurityToken(
         "Issuer",
@@ -91,7 +90,7 @@ var token = new JwtSecurityToken(
 
 ##### 步骤 1
 
-实现 `IRolePermission`，通过角色名获取该角色权限列表：
+实现 `IRolePermission`，通过角色名获取角色权限；也可按当前用户读取直接授予的权限：
 
 ```csharp
 public class MyRolePermission : IRolePermission
@@ -102,8 +101,17 @@ public class MyRolePermission : IRolePermission
         // your code
         return Task.FromResult(list);
     }
+
+    public Task<List<Claim>> GetUserPermissionClaims(ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // 按 userId 查询直接授予的权限
+        return Task.FromResult(new List<Claim>());
+    }
 }
 ```
+
+`GetUserPermissionClaims` 具有默认空实现；仅使用角色权限时不需要实现它。角色权限与用户直授权限会合并、按 Claim 的 `Type` 和 `Value` 去重后一次性加入当前请求的 `User`。
 
 然后添加服务：
 
@@ -133,10 +141,50 @@ app.UseAuthorization();
 
 授权处理支持以下权限 Claim 格式：
 
-- `"资源"` — 授予该资源下的所有操作。
-- `"资源-操作"` — 授予指定操作。
-- `"资源-*"` — 显式通配，授予该资源下的所有操作。
+- `"roles"` — 授予模块下的所有操作。
+- `"roles.delete"` — 授予指定操作。
+- `"roles.*"` — 显式通配，授予模块下的所有操作。
 - `"*"` — 全局通配，授予所有资源和操作（全局超级管理员权限）。
+
+## 资源详情
+
+通过 `ResourceData.GetResourceInfos()` 获取当前应用实际使用的层级权限详情：
+
+```csharp
+var permissions = ResourceData.GetResourceInfos();
+```
+
+返回结构按模块分组，每个模块包含操作列表：
+
+```json
+[
+    {
+        "resourceKey": "values",
+        "resourceName": "数值",
+        "actions": [
+            {
+                "actionKey": "read",
+                "actionName": "查看数值",
+                "description": "允许查看数值列表",
+                "permission": "values.read"
+            }
+        ]
+    }
+]
+```
+
+### 前端本地化建议
+
+后端返回的 `ResourceName`、`ActionName` 和 `Description` 是默认展示文本。前端可直接使用 `ResourceKey` 与 `Permission` 作为翻译键覆盖当前语言；找不到翻译时回退到后端默认文本，无需额外维护 `NameKey`。
+
+```json
+{
+    "en-US": {
+        "values": { "name": "Values" },
+        "values.read": { "name": "View values", "description": "Allows viewing value lists" }
+    }
+}
+```
 
 ## Demo
 
